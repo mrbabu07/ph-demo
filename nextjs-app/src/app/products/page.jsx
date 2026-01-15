@@ -1,12 +1,13 @@
+import Link from 'next/link'
 import React from 'react'
 
 function products() {
     return (
         <div>
             this is products page
-            <p>product 1</p>
-            <p>product 2</p>
-            <p>product 3</p>
+            <Link href="products/1">product 2</Link>
+            <Link href="products/2">product 3</Link>
+            <Link href="products/3">product 1</Link>
         </div>
     )
 }

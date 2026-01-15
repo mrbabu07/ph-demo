@@ -1,11 +1,14 @@
-import React from 'react'
+import React from "react";
 
-function productDetails() {
-    return (
-        <div>
-            this is product details page
-        </div>
-    )
+async function ProductDetails({ params }) {
+  const { slug } = params;
+
+  return (
+    <div>
+      <h1>Product Details Page{slug}</h1>
+      <p>Product slug: {slug}</p>
+    </div>
+  );
 }
 
-export default productDetails
+export default ProductDetails;
