@@ -1,11 +1,11 @@
 import React from 'react'
 
-function profile() {
+function SatsCard() {
     return (
         <div>
-            this is profile page
+            this is sats card
         </div>
     )
 }
 
-export default profile
+export default SatsCard
