@@ -1,5 +1,13 @@
 import { NextResponse } from "next/server";
-import { kv } from "@vercel/kv";
+
+// Check if KV is available
+let kv = null;
+try {
+  const kvModule = await import("@vercel/kv");
+  kv = kvModule.kv;
+} catch (error) {
+  console.log("KV not available");
+}
 
 // Initial products data
 const getInitialProducts = () => [
@@ -32,30 +40,48 @@ const getInitialProducts = () => [
   },
 ];
 
+// In-memory fallback
+let memoryCache = null;
+
 // Helper functions
 const readProducts = async () => {
-  try {
-    const products = await kv.get("products");
+  // If KV is available and configured
+  if (kv && process.env.KV_REST_API_URL) {
+    try {
+      const products = await kv.get("products");
 
-    if (!products || products.length === 0) {
-      const initialProducts = getInitialProducts();
-      await kv.set("products", initialProducts);
-      return initialProducts;
+      if (!products || products.length === 0) {
+        const initialProducts = getInitialProducts();
+        await kv.set("products", initialProducts);
+        return initialProducts;
+      }
+
+      return products;
+    } catch (error) {
+      console.log("KV error:", error.message);
     }
-
-    return products;
-  } catch (error) {
-    console.log("KV not available, using initial products");
-    return getInitialProducts();
   }
+
+  // Fallback to memory cache
+  if (!memoryCache) {
+    memoryCache = getInitialProducts();
+  }
+  return memoryCache;
 };
 
 const writeProducts = async (products) => {
-  try {
-    await kv.set("products", products);
-  } catch (error) {
-    console.log("KV not available, products not persisted");
+  // Try KV first
+  if (kv && process.env.KV_REST_API_URL) {
+    try {
+      await kv.set("products", products);
+      return;
+    } catch (error) {
+      console.log("KV write error:", error.message);
+    }
   }
+
+  // Fallback to memory
+  memoryCache = products;
 };
 
 // GET /api/products/[id] - Get single product
@@ -71,6 +97,7 @@ export async function GET(request, { params }) {
 
     return NextResponse.json(product);
   } catch (error) {
+    console.error("GET error:", error);
     return NextResponse.json(
       { error: "Failed to fetch product" },
       { status: 500 }
@@ -100,6 +127,7 @@ export async function PUT(request, { params }) {
     await writeProducts(products);
     return NextResponse.json(products[index]);
   } catch (error) {
+    console.error("PUT error:", error);
     return NextResponse.json(
       { error: "Failed to update product" },
       { status: 500 }
@@ -121,6 +149,7 @@ export async function DELETE(request, { params }) {
     await writeProducts(filteredProducts);
     return NextResponse.json({ message: "Product deleted successfully" });
   } catch (error) {
+    console.error("DELETE error:", error);
     return NextResponse.json(
       { error: "Failed to delete product" },
       { status: 500 }

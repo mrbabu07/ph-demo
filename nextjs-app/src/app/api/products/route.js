@@ -1,5 +1,13 @@
 import { NextResponse } from "next/server";
-import { kv } from "@vercel/kv";
+
+// Check if KV is available
+let kv = null;
+try {
+  const kvModule = await import("@vercel/kv");
+  kv = kvModule.kv;
+} catch (error) {
+  console.log("KV not available");
+}
 
 // Initial products data
 const getInitialProducts = () => [
@@ -32,33 +40,48 @@ const getInitialProducts = () => [
   },
 ];
 
+// In-memory fallback
+let memoryCache = null;
+
 // Helper functions
 const readProducts = async () => {
-  try {
-    // Try to get products from Vercel KV
-    const products = await kv.get("products");
+  // If KV is available and configured
+  if (kv && process.env.KV_REST_API_URL) {
+    try {
+      const products = await kv.get("products");
 
-    if (!products || products.length === 0) {
-      // Initialize with default products
-      const initialProducts = getInitialProducts();
-      await kv.set("products", initialProducts);
-      return initialProducts;
+      if (!products || products.length === 0) {
+        const initialProducts = getInitialProducts();
+        await kv.set("products", initialProducts);
+        return initialProducts;
+      }
+
+      return products;
+    } catch (error) {
+      console.log("KV error:", error.message);
     }
-
-    return products;
-  } catch (error) {
-    // If KV is not configured (local dev), return initial products
-    console.log("KV not available, using initial products");
-    return getInitialProducts();
   }
+
+  // Fallback to memory cache
+  if (!memoryCache) {
+    memoryCache = getInitialProducts();
+  }
+  return memoryCache;
 };
 
 const writeProducts = async (products) => {
-  try {
-    await kv.set("products", products);
-  } catch (error) {
-    console.log("KV not available, products not persisted");
+  // Try KV first
+  if (kv && process.env.KV_REST_API_URL) {
+    try {
+      await kv.set("products", products);
+      return;
+    } catch (error) {
+      console.log("KV write error:", error.message);
+    }
   }
+
+  // Fallback to memory
+  memoryCache = products;
 };
 
 // GET /api/products - Get all products
@@ -67,6 +90,7 @@ export async function GET() {
     const products = await readProducts();
     return NextResponse.json(products);
   } catch (error) {
+    console.error("GET error:", error);
     return NextResponse.json(
       { error: "Failed to fetch products" },
       { status: 500 }
@@ -91,6 +115,7 @@ export async function POST(request) {
 
     return NextResponse.json(newProduct, { status: 201 });
   } catch (error) {
+    console.error("POST error:", error);
     return NextResponse.json(
       { error: "Failed to create product" },
       { status: 500 }
