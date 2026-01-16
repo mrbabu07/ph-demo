@@ -1,14 +1,5 @@
 import { NextResponse } from "next/server";
 
-// Check if KV is available
-let kv = null;
-try {
-  const kvModule = await import("@vercel/kv");
-  kv = kvModule.kv;
-} catch (error) {
-  console.log("KV not available");
-}
-
 // Initial products data
 const getInitialProducts = () => [
   {
@@ -40,25 +31,42 @@ const getInitialProducts = () => [
   },
 ];
 
-// In-memory fallback
+// In-memory storage (fallback when KV not available)
 let memoryCache = null;
+
+// Helper to get KV safely
+async function getKV() {
+  try {
+    // Only try to use KV if environment variables are set
+    if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
+      const { kv } = await import("@vercel/kv");
+      return kv;
+    }
+  } catch (error) {
+    console.log("KV not available:", error.message);
+  }
+  return null;
+}
 
 // Helper functions
 const readProducts = async () => {
-  // If KV is available and configured
-  if (kv && process.env.KV_REST_API_URL) {
+  const kv = await getKV();
+
+  // Try KV first if available
+  if (kv) {
     try {
       const products = await kv.get("products");
 
-      if (!products || products.length === 0) {
-        const initialProducts = getInitialProducts();
-        await kv.set("products", initialProducts);
-        return initialProducts;
+      if (products && products.length > 0) {
+        return products;
       }
 
-      return products;
+      // Initialize KV with default products
+      const initialProducts = getInitialProducts();
+      await kv.set("products", initialProducts);
+      return initialProducts;
     } catch (error) {
-      console.log("KV error:", error.message);
+      console.log("KV read error:", error.message);
     }
   }
 
@@ -70,8 +78,10 @@ const readProducts = async () => {
 };
 
 const writeProducts = async (products) => {
+  const kv = await getKV();
+
   // Try KV first
-  if (kv && process.env.KV_REST_API_URL) {
+  if (kv) {
     try {
       await kv.set("products", products);
       return;
@@ -91,10 +101,8 @@ export async function GET() {
     return NextResponse.json(products);
   } catch (error) {
     console.error("GET error:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch products" },
-      { status: 500 }
-    );
+    // Always return default products on error
+    return NextResponse.json(getInitialProducts());
   }
 }
 
