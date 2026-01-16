@@ -3,12 +3,9 @@ import Image from "next/image";
 
 async function getProducts() {
   try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL || ""}/api/products`,
-      {
-        cache: "no-store",
-      }
-    );
+    const res = await fetch("http://localhost:4000/api/products", {
+      cache: "no-store",
+    });
     if (!res.ok) throw new Error("Failed to fetch");
     return res.json();
   } catch (error) {
@@ -65,10 +62,14 @@ export default async function ProductsPage() {
           <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
             <div className="text-6xl mb-4">📦</div>
             <p className="text-gray-600 mb-4 text-lg">
-              No products available yet.
+              No products available. Make sure the Express server is running on
+              port 4000.
             </p>
             <p className="text-sm text-gray-500">
-              Add your first product from the dashboard!
+              Run:{" "}
+              <code className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-lg font-mono">
+                node server.js
+              </code>
             </p>
           </div>
         ) : (

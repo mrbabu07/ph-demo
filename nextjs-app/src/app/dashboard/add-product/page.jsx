@@ -35,20 +35,17 @@ export default function AddProductPage() {
     setLoading(true);
 
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL || ""}/api/products`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            ...formData,
-            price: parseFloat(formData.price),
-            stock: parseInt(formData.stock),
-          }),
-        }
-      );
+      const res = await fetch("http://localhost:4000/api/products", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...formData,
+          price: parseFloat(formData.price),
+          stock: parseInt(formData.stock),
+        }),
+      });
 
       if (!res.ok) throw new Error("Failed to add product");
 
