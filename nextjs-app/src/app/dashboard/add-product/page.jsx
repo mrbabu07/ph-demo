@@ -35,17 +35,20 @@ export default function AddProductPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:4000/api/products", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...formData,
-          price: parseFloat(formData.price),
-          stock: parseInt(formData.stock),
-        }),
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL || ""}/api/products`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            ...formData,
+            price: parseFloat(formData.price),
+            stock: parseInt(formData.stock),
+          }),
+        }
+      );
 
       if (!res.ok) throw new Error("Failed to add product");
 
@@ -66,10 +69,7 @@ export default function AddProductPage() {
         router.push("/products");
       }, 2000);
     } catch (error) {
-      showToast(
-        "Failed to add product. Make sure the server is running.",
-        "error"
-      );
+      showToast("Failed to add product. Please try again.", "error");
     } finally {
       setLoading(false);
     }

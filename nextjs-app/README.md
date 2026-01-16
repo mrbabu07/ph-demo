@@ -68,9 +68,8 @@ NextShop is a full-stack e-commerce platform featuring a beautiful landing page,
    - Integration with Express.js API
 
 6. **Express.js Backend API**
-   - RESTful API endpoints
+   - RESTful API endpoints (now as Next.js API routes)
    - JSON file-based data storage
-   - CORS enabled for Next.js integration
    - Endpoints:
      - `GET /api/products` - Get all products
      - `GET /api/products/:id` - Get single product
@@ -90,9 +89,8 @@ NextShop is a full-stack e-commerce platform featuring a beautiful landing page,
 
 - **Backend:**
 
-  - Express.js 4
+  - Next.js API Routes (Serverless)
   - Node.js
-  - CORS middleware
   - File system (JSON storage)
 
 - **Authentication:**
@@ -120,23 +118,16 @@ NextShop is a full-stack e-commerce platform featuring a beautiful landing page,
    npm install
    ```
 
-3. **Start the Express.js backend server:**
-
-   ```bash
-   npm run server
-   ```
-
-   The API server will run on `http://localhost:4000`
-
-4. **In a new terminal, start the Next.js development server:**
+3. **Start the development server:**
 
    ```bash
    npm run dev
    ```
 
    The application will run on `http://localhost:3000`
+   API endpoints available at `http://localhost:3000/api/products`
 
-5. **Open your browser and visit:**
+4. **Open your browser and visit:**
    - Landing page: `http://localhost:3000`
    - Products: `http://localhost:3000/products`
    - Login: `http://localhost:3000/login`
@@ -164,13 +155,13 @@ For testing the authentication system:
 
 ## API Endpoints
 
-The Express.js server provides the following endpoints:
+The Next.js API routes provide the following endpoints:
 
-- `GET http://localhost:4000/api/products` - Fetch all products
-- `GET http://localhost:4000/api/products/:id` - Fetch single product
-- `POST http://localhost:4000/api/products` - Create new product
-- `PUT http://localhost:4000/api/products/:id` - Update product
-- `DELETE http://localhost:4000/api/products/:id` - Delete product
+- `GET http://localhost:3000/api/products` - Fetch all products
+- `GET http://localhost:3000/api/products/:id` - Fetch single product
+- `POST http://localhost:3000/api/products` - Create new product
+- `PUT http://localhost:3000/api/products/:id` - Update product
+- `DELETE http://localhost:3000/api/products/:id` - Delete product
 
 ## Project Structure
 
@@ -181,6 +172,11 @@ nextjs-app/
 │   │   ├── page.jsx                    # Landing page
 │   │   ├── layout.js                   # Root layout
 │   │   ├── globals.css                 # Global styles
+│   │   ├── api/
+│   │   │   └── products/
+│   │   │       ├── route.js            # Products API (GET, POST)
+│   │   │       └── [id]/
+│   │   │           └── route.js        # Single product API (GET, PUT, DELETE)
 │   │   ├── login/
 │   │   │   └── page.jsx                # Login page
 │   │   ├── products/
@@ -195,8 +191,7 @@ nextjs-app/
 │   ├── (components)/
 │   │   └── form/
 │   │       └── loginForm.jsx           # Login form component
-│   └── middleware.js                   # Route protection
-├── server.js                           # Express.js API server
+│   └── proxy.js                        # Route protection
 ├── products.json                       # Product data storage
 ├── package.json
 └── README.md
@@ -227,48 +222,52 @@ nextjs-app/
 ### Product Management
 
 - Products are stored in `products.json` file
-- Express.js server handles CRUD operations
+- Next.js API routes handle CRUD operations
 - Next.js fetches data using server-side rendering
 - Add product form includes validation and toast notifications
 
 ## Development Scripts
 
-- `npm run dev` - Start Next.js development server
-- `npm run server` - Start Express.js API server
+- `npm run dev` - Start Next.js development server (includes API)
 - `npm run build` - Build for production
 - `npm start` - Start production server
 - `npm run lint` - Run ESLint
 
 ## Notes
 
-- Make sure both servers (Next.js and Express.js) are running simultaneously
-- The Express.js server must be running on port 4000 for the API to work
-- Products are stored in a JSON file for simplicity (no database required)
+- The Next.js dev server includes both frontend and API routes
+- Products are stored in a JSON file for development
 - Images use Unsplash URLs for demonstration purposes
 - Authentication is mock-based for demonstration (not production-ready)
+- **For production:** Use a database instead of JSON file (Vercel's filesystem is read-only)
 
 ## Deployment
 
-### Quick Deploy (5 minutes)
+### Quick Deploy to Vercel (2 minutes)
 
-See **[QUICK_DEPLOY.md](QUICK_DEPLOY.md)** for fastest deployment guide.
+1. **Push to GitHub:**
 
-### Full Deployment Guide
+   ```bash
+   git add .
+   git commit -m "Ready for deployment"
+   git push
+   ```
 
-See **[DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)** for comprehensive deployment options including:
+2. **Deploy to Vercel:**
+   - Go to [vercel.com](https://vercel.com)
+   - Sign up with GitHub
+   - Click "New Project"
+   - Import your repository
+   - Click "Deploy"
+   - Done! 🎉
 
-- Vercel (Recommended)
-- Netlify
-- Railway
-- Render
-- Heroku
+### Important for Production:
 
-### Recommended Stack:
+- Vercel's filesystem is read-only
+- You need to add a database for persistent storage
+- Recommended: Vercel Postgres, MongoDB Atlas, or Supabase
 
-- **Frontend:** Vercel (Free)
-- **Backend:** Render (Free)
-- **Total Time:** ~5 minutes
-- **Total Cost:** $0
+See **[VERCEL_API_MIGRATION.md](VERCEL_API_MIGRATION.md)** for details about the API structure.
 
 ## Future Enhancements
 
@@ -282,4 +281,4 @@ See **[DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)** for comprehensive deployment 
 
 ---
 
-Built with ❤️ using Next.js 16 and Express.js
+Built with ❤️ using Next.js 16
