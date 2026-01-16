@@ -67,9 +67,9 @@ NextShop is a full-stack e-commerce platform featuring a beautiful landing page,
    - Automatic redirect to products page after successful creation
    - Integration with Express.js API
 
-6. **Express.js Backend API**
-   - RESTful API endpoints (now as Next.js API routes)
-   - JSON file-based data storage
+6. **API Routes with Vercel KV**
+   - RESTful API endpoints (Next.js API routes)
+   - Vercel KV database for persistent storage
    - Endpoints:
      - `GET /api/products` - Get all products
      - `GET /api/products/:id` - Get single product
@@ -90,8 +90,8 @@ NextShop is a full-stack e-commerce platform featuring a beautiful landing page,
 - **Backend:**
 
   - Next.js API Routes (Serverless)
+  - Vercel KV (Redis-compatible database)
   - Node.js
-  - File system (JSON storage)
 
 - **Authentication:**
   - Cookie-based sessions
@@ -125,12 +125,14 @@ NextShop is a full-stack e-commerce platform featuring a beautiful landing page,
    ```
 
    The application will run on `http://localhost:3000`
-   API endpoints available at `http://localhost:3000/api/products`
+   API endpoints available at `/api/products`
 
 4. **Open your browser and visit:**
    - Landing page: `http://localhost:3000`
    - Products: `http://localhost:3000/products`
    - Login: `http://localhost:3000/login`
+
+**Note:** In local development, products use default data. For persistent storage, deploy to Vercel and add Vercel KV database.
 
 ## Routes Summary
 
@@ -157,11 +159,13 @@ For testing the authentication system:
 
 The Next.js API routes provide the following endpoints:
 
-- `GET http://localhost:3000/api/products` - Fetch all products
-- `GET http://localhost:3000/api/products/:id` - Fetch single product
-- `POST http://localhost:3000/api/products` - Create new product
-- `PUT http://localhost:3000/api/products/:id` - Update product
-- `DELETE http://localhost:3000/api/products/:id` - Delete product
+- `GET /api/products` - Fetch all products
+- `GET /api/products/:id` - Fetch single product
+- `POST /api/products` - Create new product
+- `PUT /api/products/:id` - Update product
+- `DELETE /api/products/:id` - Delete product
+
+All data is stored in Vercel KV database.
 
 ## Project Structure
 
@@ -192,8 +196,8 @@ nextjs-app/
 │   │   └── form/
 │   │       └── loginForm.jsx           # Login form component
 │   └── proxy.js                        # Route protection
-├── products.json                       # Product data storage
 ├── package.json
+├── vercel.json                         # Vercel configuration
 └── README.md
 ```
 
@@ -221,7 +225,7 @@ nextjs-app/
 
 ### Product Management
 
-- Products are stored in `products.json` file
+- Products are stored in Vercel KV database
 - Next.js API routes handle CRUD operations
 - Next.js fetches data using server-side rendering
 - Add product form includes validation and toast notifications
@@ -236,10 +240,10 @@ nextjs-app/
 ## Notes
 
 - The Next.js dev server includes both frontend and API routes
-- Products are stored in a JSON file for development
+- Products are stored in Vercel KV database for production
 - Images use Unsplash URLs for demonstration purposes
 - Authentication is mock-based for demonstration (not production-ready)
-- **For production:** Use a database instead of JSON file (Vercel's filesystem is read-only)
+- **For production:** Vercel KV provides persistent storage
 
 ## Deployment
 
